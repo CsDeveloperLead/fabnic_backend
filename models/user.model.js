@@ -8,6 +8,11 @@ const userSchema = new mongoose.Schema({
     phone: { type: String, required: true },
     password: { type: String, required: true },
     googleId: String,
+    role: {
+        type: String,
+        enum: ["admin", "customer", "staff"], // Valid roles
+        default: "customer", // Default role
+    },
 });
 
 // Password hashing middleware

@@ -1,8 +1,8 @@
 import express from 'express'
 import cors from 'cors'
+import morgan from 'morgan'
 
 const app = express()
-
 const allowedOrigins = ["http://localhost:5173","http://localhost:8000"]; // Add any other origins you need
 
 app.use(
@@ -23,12 +23,13 @@ app.use(express.json({ limit: '16kb' }))
 app.use(express.urlencoded({ extended: true, limit: '16kb' }))
 app.use(express.static('public'))
 
-
 //import router here
 import userRouter from './routes/user.routes.js'
+import orderRoutes from './routes/orderRoute.js';
 
+app.use(morgan('tiny'))
 app.use('/api/v1/users', userRouter)
-
+app.use('/api/v1/orders', orderRoutes)
 
 
 export default app
