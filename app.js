@@ -25,11 +25,12 @@ app.use(express.static('public'))
 
 //import router here
 import userRouter from './routes/user.routes.js'
-import orderRoutes from './routes/orderRoute.js';
+import orderRoutes from './routes/order.route.js';
+import adminRouter from './routes/admin.routes.js'
 
 app.use(morgan('tiny'))
 app.use('/api/v1/users', userRouter)
 app.use('/api/v1/orders', orderRoutes)
-
+app.use('/api/v1/admin', adminRouter)
 
 export default app

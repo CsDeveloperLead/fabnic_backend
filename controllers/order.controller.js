@@ -1,18 +1,12 @@
-import Order from "../models/orders.js";
-import { v2 as cloudinary } from "cloudinary";
-import fs from "fs/promises";
+import Order from "../models/orders.model.js";
+import { uploadOnCloudinary } from "../utils/cloudinary.js";
 
-// Configure Cloudinary
-cloudinary.config({
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
-  api_key: process.env.CLOUDINARY_API_KEY,
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-});
-
-const createOrder = async (req, res) => {
+export const createOrder = async (req, res) => {
   try {
     // Check if the necessary fields are present
-    const { client, products, receivingDate, expectedDeliveryDate, paymentGiven, paymentStatus, orderStatus } = req.body;
+    const client = JSON.parse(req.body.client); // parse the client object from the request body
+    const products = JSON.parse(req.body.products); // parse the products array from the request body
+    const { orderIssue, receivingDate, expectedDeliveryDate, paymentGiven, paymentStatus, orderStatus } = req.body;
 
     // Validate fields
     if (!client || !products || !receivingDate || !expectedDeliveryDate || paymentGiven === undefined || paymentStatus === undefined || orderStatus === undefined) {
@@ -23,9 +17,8 @@ const createOrder = async (req, res) => {
     const productPhotos = [];
     if (req.files && req.files.length > 0) {
       for (const file of req.files) {
-        const result = await cloudinary.uploader.upload(file.path, { folder: "order_photos" });
-        productPhotos.push(result.secure_url);
-        await fs.unlink(file.path); // Remove local file after uploading
+        const imageUpload = await uploadOnCloudinary(file.path)
+        productPhotos.push(imageUpload.secure_url);
       }
     }
 
@@ -37,13 +30,14 @@ const createOrder = async (req, res) => {
       client,
       products: products.map((product, index) => ({
         ...product,
-        photos: productPhotos[index] || product.photos, // Assign uploaded photos to product
+        photo: productPhotos[index] || product.photos, // Assign uploaded photos to product
       })),
       receivingDate,
       expectedDeliveryDate,
       paymentGiven,
       paymentStatus: paymentGiven >= totalCost ? "Full Paid" : "Partially Paid",
       orderStatus: orderStatus || "In Process",
+      orderIssue
     });
 
     // Save the order to the database
@@ -56,4 +50,23 @@ const createOrder = async (req, res) => {
   }
 };
 
-export { createOrder };
+export const getOrders = async (req, res) => {
+  const orders = await Order.find().populate('client').populate('products');
+
+  if (!orders) {
+    return res.status(404).json({ message: "No orders found" });
+  }
+
+  return res
+    .status(200)
+    .json(orders);
+
+}
+
+//just for testing
+export const deleteAllOrders = async (req, res) => {
+  const orders = await Order.deleteMany();
+
+  return res.status(200).json({ message: "All orders deleted successfully" });
+
+}

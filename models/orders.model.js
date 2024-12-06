@@ -4,11 +4,13 @@ import mongoose from "mongoose";
 const productSchema = new mongoose.Schema(
   {
     type: { type: String, required: true },
-    productId: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true },
+    productId: { type: String },
     name: { type: String, required: true },
     serviceCost: { type: Number, required: true },
     status: { type: String, enum: ["In Process", "Completed", "Cancelled"], default: "In Process" },
     photo: { type: String },
+    serviceType: { type: String },
+    issue: { type: String }
   },
   { timestamps: true }
 );
@@ -23,6 +25,7 @@ const orderSchema = new mongoose.Schema(
       address: { type: String, required: true },
     },
     products: [productSchema],
+    orderIssue: { type: String },
     receivingDate: { type: Date, required: true },
     expectedDeliveryDate: { type: Date, required: true },
     paymentGiven: { type: Number, required: true },
