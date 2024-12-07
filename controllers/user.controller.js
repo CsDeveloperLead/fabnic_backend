@@ -95,7 +95,7 @@ export const login = async (req, res) => {
         const query = isEmail ? { email: identifier } : { phone: identifier }; // Query by email or phone
 
         const user = await User.findOne(query); // Find user by email or phone
-        
+
         if (!user) {
             return res.status(400).json({ error: "User not found" });
         }
@@ -108,7 +108,7 @@ export const login = async (req, res) => {
 
         // Generate JWT token
         const token = jwt.sign(
-            { id: user._id, email: user.email, name: user.name, phone: user.phone },
+            { id: user._id, email: user.email, name: user.name, phone: user.phone, role: user.role },
             JWT_SECRET,
             { expiresIn: "1h" }
         );
@@ -120,12 +120,12 @@ export const login = async (req, res) => {
     }
 }
 
-export const getUsers = async(req,res)=>{
+export const getUsers = async (req, res) => {
     const users = await User.find().select("-password");
-    
+
     return res
-    .status(200)
-    .json({message: users})
+        .status(200)
+        .json({ message: users })
 
 }
 
